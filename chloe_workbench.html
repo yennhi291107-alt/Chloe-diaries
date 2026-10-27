@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chloe's Workbench</title>
+<style>
+:root{
+  --bg:#f9ddea;            /* soft pink background */
+  --card:#ffffff;
+  --text:#7b1c1c;          /* dark pink titles */
+  --muted:#a87b87;         /* muted pinkish */
+  --accent:#d4536b;        /* pink accent */
+  --accent-soft:#fde8ee;   /* very light pink */
+  --border:#ecd3d8;
+  --radius:14px;
+  --sidebar-w:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Microsoft YaHei','PingFang SC','Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:18px;
+}
+.app{
+  display:flex;
+  width:1440px;max-width:100%;
+  height:900px;max-height:100%;
+  background:var(--card);
+  border-radius:18px;
+  box-shadow:0 18px 60px rgba(0,0,0,0.12);
+  overflow:hidden;
+}
+/* Top bar */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-bottom:1px solid var(--border);
+}
+.topbar .left{display:flex;align-items:center;gap:12px}
+.date{font-size:13px;color:var(--muted);font-weight:600}
+.topbar .right{display:flex;align-items:center;gap:10px}
+.avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#f59e0b);
+  color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;
+}
+/* Greeting */
+.greeting{
+  text-align:center;
+  padding:8px 0 10px;
+}
+.greeting .name{font-size:26px;font-weight:800;color:var(--text);letter-spacing:1px}
+.greeting .sub{font-size:14px;color:var(--muted);margin-top:4px;line-height:1.5}
+.greeting .note{
+  margin-top:8px;
+  display:inline-block;
+  background:var(--accent-soft);color:var(--accent);
+  font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;
+}
+/* Tab bar */
+.tabbar{
+  display:flex;
+  gap:6px;
+  padding:12px 18px;
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+}
+.tab{
+  padding:10px 18px;
+  border:none;border-radius:12px;
+  font-size:14px;font-weight:600;
+  background:#fff;color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
+  transition:background 0.15s,color 0.15s;
+}
+.tab:hover{background:var(--accent-soft);color:var(--accent)}
+.tab.active{background:var(--accent);color:#fff}
+.tab .ico{font-size:15px}
+/* Tab content */
+.tab-content{
+  display:none;
+  flex-direction:column;
+  gap:14px;
+  padding:16px 18px;
+  height:calc(100% - 130px);
+  overflow-y:auto;
+}
+.tab-content.active{display:flex}
+/* ---------- Schedule ---------- */
+.schedule-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+.slot{
+  border:1px solid var(--border);
+  border-radius:10px;
+  min-height:64px;
+  background:#fff;
+  padding:6px 8px;
+}
+.slot input{
+  width:100%;border:none;outline:none;background:transparent;
+  font-size:13px;color:var(--text);
+}
+.slot .ttl{font-size:11px;color:var(--muted);font-weight:600}
+.slot-key{
+  font-size:10px;color:var(--muted);padding:0 4px;font-weight:700;
+}
+.add-sched{
+  display:flex;gap:8px;margin-top:10px;
+  flex-wrap:wrap;
+  align-items:end;
+}
+.add-sched label{font-size:12px;color:var(--muted);width:70px;flex-shrink:0}
+.add-sched input,.add-sched select{
+  flex:1;min-width:160px;padding:7px 10px;border-radius:8px;
+  border:1px solid var(--border);font-size:13px;background:#fff;color:var(--text);
+}
+.add-sched button{
+  padding:7px 14px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+}
+.add-sched button:hover{background:#d96c12}
+/* ---------- Todos ---------- */
+.todos-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.todo-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;
+}
+.todo-item input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent)}
+.todo-item .txt{
+  flex:1;font-size:14px;color:var(--text);
+  border:none;background:transparent;padding:2px 4px;outline:none;font-family:inherit;
+}
+.todo-item .txt[disabled]{background:#f3f1ec}
+.todo-item .del{
+  border:none;background:none;cursor:pointer;color:var(--muted);font-size:18px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.todo-item .del:hover{color:#c0392b}
+.count{font-size:12px;color:var(--muted);text-align:right;flex-shrink:0}
+.add-todo{
+  display:flex;gap:8px;margin-top:10px;align-items:end;
+}
+.add-todo label{font-size:12px;color:var(--muted);width:60px;flex-shrink:0}
+.add-todo input{
+  flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;background:#fff;color:var(--text);
+}
+.add-todo button{
+  padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+}
+.add-todo button:hover{background:#d96c12}
+/* ---------- Log ---------- */
+.log-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.log-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;
+}
+.log-item .date{width:80px;flex-shrink:0}
+.log-item input{font-size:13px;color:var(--text);border:none;background:transparent;padding:2px 4px;outline:none;width:100%;font-family:inherit}
+.log-item .sta{
+  width:70px;flex-shrink:0;text-align:right;
+}
+.log-item .del{
+  border:none;background:none;cursor:pointer;color:var(--muted);font-size:18px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.log-item .del:hover{color:#c0392b}
+.add-log{
+  display:flex;gap:8px;margin-top:10px;align-items:end;
+}
+.add-log label{font-size:12px;color:var(--muted);width:60px;flex-shrink:0}
+.add-log input,.add-log select{
+  flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;background:#fff;color:var(--text);
+}
+.add-log button{
+  padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+}
+.add-log button:hover{background:#d96c12}
+.stats-bar{display:flex;gap:16px;text-align:right}
+.stats-bar .st{
+  border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:#fff;
+}
+.stats-bar .st .lbl{font-size:11px;color:var(--muted);font-weight:600}
+.stats-bar .st .val{font-size:20px;font-weight:800;color:var(--text)}
+/* ---------- Places ---------- */
+.places-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.place-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;
+}
+.place-item .nm{flex:1;font-size:14px;color:var(--text);border:none;background:transparent;padding:2px 4px;outline:none;font-family:inherit}
+.place-item .loc{font-size:12px;color:var(--muted);flex-shrink:0}
+.place-item .del{
+  border:none;background:none;cursor:pointer;color:var(--muted);font-size:18px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.place-item .del:hover{color:#c0392b}
+.add-place{
+  display:flex;gap:8px;margin-top:10px;align-items:end;
+}
+.add-place label{font-size:12px;color:var(--muted);width:70px;flex-shrink:0}
+.add-place input,.add-place select{
+  flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;background:#fff;color:var(--text);
+}
+.add-place button{
+  padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+}
+.add-place button:hover{background:#d96c12}
+/* ---------- Responsive ---------- */
+@media (max-width:1000px){
+  .app{flex-direction:column;padding:12px}
+  .sidebar{display:none}
+  .main{padding:12px}
+  .stats-bar{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- NOTE: this page is intentionally focused on the 4 tabs; sidebar removed for clarity -->
+  <main class="main" style="display:flex;flex-direction:column">
+    <div class="topbar">
+      <div class="left">
+        <span class="date" id="todayLabel"></span>
+        <span style="font-size:13px;color:var(--muted);margin-left:8px" id="dateRange"></span>
+      </div>
+      <div class="right">
+        <div class="avatar" id="userAvatar">C</div>
+        <span style="font-size:13px;color:var(--muted);font-weight:600">Chloe</span>
+      </div>
+    </div>
+
+    <div class="greeting">
+      <div class="name">Good evening, Chloe.</div>
+      <div class="sub">Let's have a productive evening.</div>
+      <div class="note" id="greetingNote">Teaching Vietnamese class tonight · 19:30</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabbar">
+      <button class="tab active" data-tab="schedule"><span class="ico">📅</span> Schedule (Thu–Sun)</button>
+      <button class="tab" data-tab="schedule2"><span class="ico">📅</span> T2 → Chủ Nhật</button>
+      <button class="tab" data-tab="log"><span class="ico">📋</span> Task Log</button>
+      <button class="tab" data-tab="places"><span class="ico">📍</span> Favorite Places</button>
+    </div>
+
+    <!-- Tab 1: Schedule -->
+    <div class="tab-content active" id="tab-schedule">
+      <div class="section-title" style="margin-bottom:10px">
+        <h3 style="font-size:16px">Study Schedule — Thu to Sun</h3>
+        <button data-tab="schedule" class="toggle" style="border:1px solid var(--border);background:#fff;padding:5px 10px;border-radius:8px;font-size:12px">Reset</button>
+      </div>
+      <div class="schedule-grid" id="scheduleGrid"></div>
+      <div class="add-sched">
+        <label for="addDay">Day</label>
+        <select id="addDay">
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+          <option value="Saturday">Saturday</option>
+          <option value="Sunday">Sunday</option>
+        </select>
+        <label for="addTime">Time</label>
+        <select id="addTime">
+          <option value="16:00">16:00</option>
+          <option value="17:30">17:30</option>
+          <option value="19:00">19:00</option>
+          <option value="19:30">19:30</option>
+          <option value="20:30">20:30</option>
+          <option value="21:30">21:30</option>
+          <option value="22:00">22:00</option>
+        </select>
+        <label for="addSubj">Subject</label>
+        <input id="addSubj" placeholder="e.g. Vietnamese">
+        <label for="addDur">Duration (min)</label>
+        <input id="addDur" placeholder="e.g. 90">
+        <button id="btnAddSlot">Add</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted)" id="slotFeedback"></div>
+    </div>
+
+    <!-- Tab 2: T2 → Chủ Nhật Schedule -->
+    <div class="tab-content" id="tab-schedule2">
+      <div class="section-title" style="margin-bottom:10px">
+        <h3 style="font-size:16px">Study Schedule — T2 to Chủ Nhật</h3>
+        <button data-tab="schedule2" class="toggle" style="border:1px solid var(--border);background:#fff;padding:5px 10px;border-radius:8px;font-size:12px">Reset grid</button>
+      </div>
+      <div class="schedule-grid" id="scheduleGrid2"></div>
+      <div class="add-sched">
+        <label for="addDay2">Day</label>
+        <select id="addDay2">
+          <option value="Monday">Monday</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+          <option value="Saturday">Saturday</option>
+          <option value="Sunday">Sunday</option>
+        </select>
+        <label for="addTime2">Time</label>
+        <select id="addTime2">
+          <option value="16:00">16:00</option>
+          <option value="17:30">17:30</option>
+          <option value="19:00">19:00</option>
+          <option value="19:30">19:30</option>
+          <option value="20:30">20:30</option>
+          <option value="21:30">21:30</option>
+          <option value="22:00">22:00</option>
+        </select>
+        <label for="addSubj2">Subject</label>
+        <input id="addSubj2" placeholder="e.g. Vietnamese">
+        <label for="addDur2">Duration (min)</label>
+        <input id="addDur2" placeholder="e.g. 90">
+        <button id="btnAddSlot2">Add</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted)" id="slotFeedback2"></div>
+    </div>
+
+    <!-- Tab 3: Task Log -->
+    <div class="tab-content" id="tab-log">
+      <div class="section-title" style="margin-bottom:10px">
+        <h3 style="font-size:16px">Task Log</h3>
+      </div>
+      <div class="stats-bar">
+        <div class="st"><div class="lbl">Done</div><div class="val" id="doneCount">0</div></div>
+        <div class="st"><div class="lbl">Pending</div><div class="val" id="pendingCount">0</div></div>
+        <div class="st"><div class="lbl">Total</div><div class="val" id="totalCount">0</div></div>
+      </div>
+      <div class="log-list" id="logList"></div>
+      <div class="add-log">
+        <label for="addDate">Date</label>
+        <input id="addDate" type="date">
+        <label for="addLogTask">Task</label>
+        <input id="addLogTask" placeholder="e.g. call tutoring center">
+        <label for="addLogSta">Status</label>
+        <select id="addLogSta"><option value="pending">pending</option><option value="done">done</option></select>
+        <button id="btnAddLog">Add</button>
+      </div>
+    </div>
+
+    <!-- Tab 4: Favorite Places -->
+    <div class="tab-content" id="tab-places">
+      <div class="section-title" style="margin-bottom:10px">
+        <h3 style="font-size:16px">Favorite Places</h3>
+      </div>
+      <div class="places-list" id="placesList"></div>
+      <div class="add-place">
+        <label for="addPlaceName">Place</label>
+        <input id="addPlaceName" placeholder="e.g. Hanoi">
+        <label for="addPlaceLoc">Location / Notes</label>
+        <input id="addPlaceLoc" placeholder="e.g. Truc Bach Lake">
+        <button id="btnAddPlace">Add</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'chloe_workbench_v1';
+
+  const SLOTS = ['16:00','17:30','19:00','19:30','20:30','21:30','22:00'];
+  const SCHED1_DAYS = ['Thursday','Friday','Saturday','Sunday'];
+  const SCHED2_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+  function buildScheduleState(daysList){
+    const o = {};
+    daysList.forEach(d=>{ o[d] = Array(SLOTS.length).fill(''); });
+    return o;
+  }
+
+  const defaultState = {
+    schedule: Object.assign({}, buildScheduleState(SCHED1_DAYS), buildScheduleState(SCHED2_DAYS)),
+    todos: [],
+    log: [],
+    places: []
+  };
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return JSON.parse(JSON.stringify(defaultState));
+      const parsed = JSON.parse(raw);
+      return {
+        schedule: Object.assign(defaultState.schedule, parsed.schedule),
+        todos: Array.isArray(parsed.todos)? parsed.todos : [],
+        log: Array.isArray(parsed.log)? parsed.log : [],
+        places: Array.isArray(parsed.places)? parsed.places : []
+      };
+    }catch(e){ return JSON.parse(JSON.stringify(defaultState)); }
+  }
+  let state = load();
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  // ---------- helpers ----------
+  const $ = (sel, root=document)=>root.querySelector(sel);
+  const $$ = (sel, root=document)=>Array.from(root.querySelectorAll(sel));
+
+  function fmtDate(dateStr){
+    if(!dateStr) return '';
+    const d = new Date(dateStr+'T00:00:00');
+    const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    return d.getDate()+ ' ' + days[d.getDay()];
+  }
+
+  // ---------- render ----------
+  function renderSchedule(days, gridId){
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    days.forEach(day=>{
+      const hdr = document.createElement('div');
+      hdr.className='slot';
+      hdr.innerHTML = `<div class="ttl">${day}</div>`;
+      hdr.style.gridColumn=1;
+      grid.appendChild(hdr);
+      SLOTS.forEach((time,i)=>{
+        const cell = document.createElement('div');
+        cell.className='slot';
+        cell.dataset.day=day;
+        cell.dataset.idx=i;
+        const val = state.schedule[day] && state.schedule[day][i] ? state.schedule[day][i] : '';
+        cell.innerHTML = `<input value="${escapeHtml(val)}" placeholder="${time}">`;
+        cell.querySelector('input').addEventListener('input', (e)=>{
+          if(!state.schedule[day]) state.schedule[day]=[];
+          state.schedule[day][i]=e.target.value;
+          save();
+        });
+        grid.appendChild(cell);
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"']/g, c=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function renderTodos(){
+    const list=$('#todosList');
+    list.innerHTML='';
+    state.todos.forEach((t,i)=>{
+      const div=document.createElement('div');
+      div.className='todo-item';
+      div.innerHTML = `
+        <input type="checkbox" ${t.done?'checked':''}>
+        <input class="txt" value="${escapeHtml(t.text)}" ${t.done?'disabled':''}>
+        <button class="del" data-idx="${i}">×</button>
+      `;
+      div.querySelector('input[type=checkbox]').addEventListener('change', (e)=>{
+        state.todos[i].done=e.target.checked;
+        save(); renderTodos();
+      });
+      div.querySelector('.txt').addEventListener('change', (e)=>{
+        state.todos[i].text=e.target.value;
+        save();
+      });
+      div.querySelector('.del').addEventListener('click', ()=>{
+        state.todos.splice(i,1); save(); renderTodos();
+      });
+      list.appendChild(div);
+    });
+    const done = state.todos.filter(t=>t.done).length;
+    const total = state.todos.length;
+    $('#todoCount').textContent = done + '/' + total + ' done';
+  }
+
+  function renderLog(){
+    const list=$('#logList');
+    list.innerHTML='';
+    state.log.forEach((item,idx)=>{
+      const div=document.createElement('div');
+      div.className='log-item';
+      const dateStr = item.date || '';
+      const dateLabel = item.date ? (new Date(item.date+'T00:00:00')).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+      div.innerHTML = `
+        <input class="date" value="${dateStr}">
+        <input class="txt" value="${escapeHtml(item.task)}">
+        <div class="sta">
+          <select data-idx="${idx}">
+            <option value="pending" ${item.status==='pending'?'selected':''}>pending</option>
+            <option value="done" ${item.status==='done'?'selected':''}>done</option>
+          </select>
+        </div>
+        <button class="del" data-idx="${idx}">×</button>
+      `;
+      div.querySelector('input.date').addEventListener('change', (e)=>{
+        state.log[idx].date=e.target.value; save();
+      });
+      div.querySelector('.txt').addEventListener('change', (e)=>{
+        state.log[idx].task=e.target.value; save();
+      });
+      div.querySelector('select').addEventListener('change', (e)=>{
+        state.log[idx].status=e.target.value; save();
+      });
+      div.querySelector('.del').addEventListener('click', ()=>{
+        state.log.splice(idx,1); save(); renderLog();
+      });
+      list.appendChild(div);
+    });
+    const done = state.log.filter(l=>l.status==='done').length;
+    const total = state.log.length;
+    $('#doneCount').textContent = done;
+    $('#pendingCount').textContent = total-done;
+    $('#totalCount').textContent = total;
+  }
+
+  function renderPlaces(){
+    const list=$('#placesList');
+    list.innerHTML='';
+    state.places.forEach((p,i)=>{
+      const div=document.createElement('div');
+      div.className='place-item';
+      div.innerHTML = `
+        <input class="nm" value="${escapeHtml(p.name)}">
+        <input class="loc" value="${escapeHtml(p.location||p.note||'')}" placeholder="Location / notes">
+        <button class="del" data-idx="${i}">×</button>
+      `;
+      div.querySelector('.nm').addEventListener('change', (e)=>{
+        state.places[i].name=e.target.value; save();
+      });
+      div.querySelector('.loc').addEventListener('change', (e)=>{
+        state.places[i].location=e.target.value; save();
+      });
+      div.querySelector('.del').addEventListener('click', ()=>{
+        state.places.splice(i,1); save(); renderPlaces();
+      });
+      list.appendChild(div);
+    });
+  }
+
+  // ---------- events ----------
+  function addScheduleSlot(daySel, timeSel, subjSel, durSel, gridId, daysList, feedbackId){
+    const day=daySel.value;
+    const time=timeSel.value;
+    const subj=subjSel.value.trim();
+    const dur=durSel.value.trim();
+    if(!day || !time || !subj){
+      const fb=document.getElementById(feedbackId);
+      fb.textContent='Please fill Day, Time and Subject.';
+      return;
+    }
+    const idx=SLOTS.indexOf(time);
+    if(idx===-1){
+      const fb=document.getElementById(feedbackId);
+      fb.textContent='Please pick a valid time.';
+      return;
+    }
+    if(!state.schedule[day]) state.schedule[day]=[];
+    state.schedule[day][idx]=subj+(dur?(' '+dur+'m'):'');
+    save();
+    renderSchedule(daysList, gridId);
+    daySel.value=''; timeSel.value=''; subjSel.value=''; durSel.value='';
+    const fb=document.getElementById(feedbackId);
+    fb.textContent='';
+  }
+
+  $('#btnAddSlot').addEventListener('click', ()=>{
+    addScheduleSlot($('#addDay'), $('#addTime'), $('#addSubj'), $('#addDur'), 'scheduleGrid', SCHED1_DAYS, 'slotFeedback');
+  });
+  $('#btnAddSlot2').addEventListener('click', ()=>{
+    addScheduleSlot($('#addDay2'), $('#addTime2'), $('#addSubj2'), $('#addDur2'), 'scheduleGrid2', SCHED2_DAYS, 'slotFeedback2');
+  });
+
+
+  $('#btnAddPlace').addEventListener('click', ()=>{
+    const name=$('#addPlaceName').value.trim();
+    const loc=$('#addPlaceLoc').value.trim();
+    if(!name) return;
+    state.places.push({name, location: loc||null});
+    save(); renderPlaces(); $('#addPlaceName').value=''; $('#addPlaceLoc').value='';
+  });
+  $('#addPlaceName').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#btnAddPlace').click(); });
+
+  // Tab switching
+  $$('.tabbar .tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      $$('.tabbar .tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      const id=tab.dataset.tab;
+      $$('.tab-content').forEach(c=>c.classList.remove('active'));
+      $('#tab-'+id).classList.add('active');
+      if(id==='todos') renderTodos();
+      if(id==='log') renderLog();
+      if(id==='places') renderPlaces();
+      if(id==='schedule') renderSchedule(SCHED1_DAYS, 'scheduleGrid');
+      if(id==='schedule2') renderSchedule(SCHED2_DAYS, 'scheduleGrid2');
+    });
+  });
+
+  // ---------- init ----------
+  $('#todayLabel').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  $('#dateRange').textContent = new Date().toLocaleDateString('en-US',{year:'numeric'});
+  renderSchedule(SCHED1_DAYS, 'scheduleGrid');
+  renderSchedule(SCHED2_DAYS, 'scheduleGrid2');
+  renderLog();
+  renderPlaces();
+})();
+</script>
+</body>
+</html>
